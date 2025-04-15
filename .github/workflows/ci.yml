@@ -23,4 +23,17 @@ jobs:
 
       - name: Run tests
         run: node test.js
+        
+      - name: Update Jira issue status
+        if: github.event.pull_request.merged == true
+        run: |
+          ISSUE_KEY=$(echo "${{ github.event.pull_request.title }}" | grep -oE '[A-Z]+-[0-9]+')
+          echo "Found issue key: $ISSUE_KEY"
+
+          curl -X POST \
+            -u "${{ secrets.JIRA_EMAIL }}:${{ secrets.JIRA_API_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            --data '{"transition": {"id": "31"}}' \
+            "${{ secrets.JIRA_BASE_URL }}/rest/api/3/issue/$ISSUE_KEY/transitions"
+
 
